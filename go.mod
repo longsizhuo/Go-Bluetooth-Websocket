@@ -2,7 +2,10 @@ module Go-Bluetooth-Websocket
 
 go 1.23.0
 
-require tinygo.org/x/bluetooth v0.10.0
+require (
+	golang.org/x/text v0.17.0
+	tinygo.org/x/bluetooth v0.10.0
+)
 
 require (
 	github.com/go-ole/go-ole v1.2.6 // indirect

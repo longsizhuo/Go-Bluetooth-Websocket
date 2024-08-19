@@ -1,37 +1,61 @@
 package internalbluetooth
 
 import (
-	"log"
+	"fmt"
 	"tinygo.org/x/bluetooth"
 )
 
-var adapter = bluetooth.DefaultAdapter
-
-// ConnectToDevice connects to a Bluetooth device by its address.
-func ConnectToDevice(address string) (bluetooth.Device, error) {
-	// 启用蓝牙适配器
+func ConnectBLEDeviceAndChat(address bluetooth.Address) error {
+	adapter := bluetooth.DefaultAdapter
 	err := adapter.Enable()
 	if err != nil {
-		return bluetooth.Device{}, err
+		return err
 	}
 
-	// 将字符串形式的地址解析为 BLE 地址对象
-	addr, err := bluetooth.ParseMAC(address)
+	// 连接到BLE设备
+	device, err := adapter.Connect(address, bluetooth.ConnectionParams{})
 	if err != nil {
-		return bluetooth.Device{}, err
+		return err
 	}
-	macAddress := bluetooth.MACAddress{
-		MAC: addr,
-	}
-	bleAddress := bluetooth.Address{MACAddress: macAddress}
+	defer func(device bluetooth.Device) {
+		err := device.Disconnect()
+		if err != nil {
 
-	// 尝试连接到设备
-	log.Printf("尝试连接到设备: %s", address)
-	device, err := adapter.Connect(bleAddress, bluetooth.ConnectionParams{})
+		}
+	}(device)
+
+	// 发现服务
+	services, err := device.DiscoverServices(nil)
 	if err != nil {
-		return bluetooth.Device{}, err
+		return err
 	}
 
-	log.Printf("成功连接到设备: %s", address)
-	return device, nil
+	for _, service := range services {
+		// 发现特征
+		characteristics, err := service.DiscoverCharacteristics(nil)
+		if err != nil {
+			return err
+		}
+
+		for _, char := range characteristics {
+			fmt.Printf("发现特征: %s\n", char.UUID().String())
+
+			// 写入消息到特征
+			message := []byte("Hello from Go BLE!")
+			_, err = char.WriteWithoutResponse(message)
+			if err != nil {
+				return err
+			}
+			fmt.Println("消息已发送!")
+
+			// 读取特征的响应
+			buf := make([]byte, 512) // 512字节的缓冲区用于读取消息
+			n, err := char.Read(buf)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("收到消息: %s\n", string(buf[:n]))
+		}
+	}
+	return nil
 }
