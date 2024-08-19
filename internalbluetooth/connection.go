@@ -20,7 +20,7 @@ func ConnectBLEDeviceAndChat(address bluetooth.Address) error {
 	defer func(device bluetooth.Device) {
 		err := device.Disconnect()
 		if err != nil {
-
+			return
 		}
 	}(device)
 

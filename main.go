@@ -31,12 +31,12 @@ func main() {
 			println(d)
 		}
 		// Choose a device to connect to through the command line
-		device_connect := bufio.NewReader(os.Stdin)
+		deviceConnect := bufio.NewReader(os.Stdin)
 		println("请输入要连接的MAC:")
-		device_name, _ := device_connect.ReadString('\n')
-		device_name = device_name[:len(device_name)-1]
+		deviceName, _ := deviceConnect.ReadString('\n')
+		deviceName = deviceName[:len(deviceName)-1]
 		// 需要转 type MAC [6]byte
-		macBytes, err := parseMAC(device_name)
+		macBytes, err := parseMAC(deviceName)
 		if err != nil {
 			fmt.Println("无效的MAC地址:", err)
 			return
@@ -73,6 +73,7 @@ func parseMAC(mac string) ([6]byte, error) {
 			}
 			macBytes[i] = byteVal[0]
 		}
+		fmt.Println(macBytes)
 		return macBytes, nil
 	}
 
@@ -89,6 +90,8 @@ func parseMAC(mac string) ([6]byte, error) {
 		}
 		macBytes[i] = byteVal[0]
 	}
+
+	fmt.Println(macBytes)
 
 	return macBytes, nil
 }
